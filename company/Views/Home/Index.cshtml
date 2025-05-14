@@ -1,0 +1,107 @@
+﻿
+@model company.Models.CompanyViewModel
+@{
+    ViewData["Title"] = "بيانات الشركة";
+}
+
+<style>
+    body {
+        font-family: Tahoma, Arial, sans-serif;
+        background-color: #f9f9f9;
+    }
+
+    .form-container {
+        max-width: 800px;
+        margin: auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+        text-align: center;
+        color: #4361ee;
+    }
+
+    .form-group label {
+        font-weight: bold;
+    }
+
+    .btn-submit {
+        background-color: #4361ee;
+        color: white;
+    }
+
+        .btn-submit:hover {
+            background-color: #3a0ca3;
+        }
+</style>
+
+<div class="container form-container">
+    <h2>بيانات الشركة</h2>
+    <form id="companyForm" asp-action="SaveCompany" method="post">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label asp-for="ComArabicName" class="form-label">الاسم العربي</label>
+                    <input asp-for="ComArabicName" class="form-control" required />
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="ShortArabicName" class="form-label">الاسم المختصر عربي</label>
+                    <input asp-for="ShortArabicName" class="form-control" />
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="ComWebsite" class="form-label">الموقع الإلكتروني</label>
+                    <input asp-for="ComWebsite" class="form-control" />
+                </div>
+                <div class="form-check mb-3">
+                    <input asp-for="IsDefault" class="form-check-input" />
+                    <label asp-for="IsDefault" class="form-check-label">افتراضي؟</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label asp-for="ComEnglishName" class="form-label">الاسم الإنجليزي</label>
+                    <input asp-for="ComEnglishName" class="form-control" />
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="ShortEnglishName" class="form-label">الاسم المختصر إنجليزي</label>
+                    <input asp-for="ShortEnglishName" class="form-control" />
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="ComAddress" class="form-label">العنوان</label>
+                    <textarea asp-for="ComAddress" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="ComNote" class="form-label">ملاحظات</label>
+                    <textarea asp-for="ComNote" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <!-- استخدام onclick بدلاً من submit -->
+            <button type="button" class="btn btn-submit px-4 py-2" onclick="submitCompanyForm()">حفظ</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+    function submitCompanyForm() {
+        if (validateCompany()) {
+            document.getElementById("companyForm").submit();
+        }
+    }
+
+    function validateCompany() {
+        const arabicName = document.querySelector("[name='ComArabicName']").value.trim();
+        if (!arabicName) {
+            alert("الرجاء إدخال الاسم العربي");
+            return false;
+        }
+        console.log("النموذج جاهز للإرسال");
+        return true;
+    }
+    </script>
+}

@@ -1,0 +1,27 @@
+﻿# ملفات Visual Studio
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.csproj.user
+*.userprefs
+
+# ملفات البناء
+Debug/
+Release/
+*.pdb
+*.cache
+
+# ملفات النظام
+Thumbs.db
+[Dd]ebug/
+*.log
+
+# ملفات NuGet
+packages/
+*.nupkg
+.nuget/
+
+# ملفات إعدادات محلية
+appsettings.Development.json
