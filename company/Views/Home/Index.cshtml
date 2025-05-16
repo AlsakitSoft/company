@@ -1,5 +1,5 @@
-﻿
-@model company.Models.CompanyViewModel
+﻿@model company.Controllers.IndexViewModel
+@*@model company.Models.CompanyViewModel*@
 @{
     ViewData["Title"] = "بيانات الشركة";
 }
@@ -41,41 +41,42 @@
 <div class="container form-container">
     <h2>بيانات الشركة</h2>
     <form id="companyForm" asp-action="SaveCompany" method="post">
+        @Html.AntiForgeryToken()
         <div class="row">
             <div class="col-md-6">
                 <div class="form-group mb-3">
-                    <label asp-for="ComArabicName" class="form-label">الاسم العربي</label>
-                    <input asp-for="ComArabicName" class="form-control" required />
+                    <label asp-for="NewCompany.ComArabicName"  class="form-label">الاسم العربي</label>
+                    <input asp-for="NewCompany.ComArabicName" id="ComArabicName" class="form-control" required />
                 </div>
                 <div class="form-group mb-3">
-                    <label asp-for="ShortArabicName" class="form-label">الاسم المختصر عربي</label>
-                    <input asp-for="ShortArabicName" class="form-control" />
+                    <label asp-for="NewCompany.ShortArabicName" class="form-label">الاسم المختصر عربي</label>
+                    <input asp-for="NewCompany.ShortArabicName" class="form-control" />
                 </div>
                 <div class="form-group mb-3">
-                    <label asp-for="ComWebsite" class="form-label">الموقع الإلكتروني</label>
-                    <input asp-for="ComWebsite" class="form-control" />
+                    <label asp-for="NewCompany.ComWebsite" class="form-label">الموقع الإلكتروني</label>
+                    <input asp-for="NewCompany.ComWebsite" class="form-control" />
                 </div>
                 <div class="form-check mb-3">
-                    <input asp-for="IsDefault" class="form-check-input" />
-                    <label asp-for="IsDefault" class="form-check-label">افتراضي؟</label>
+                    <input asp-for="NewCompany.IsDefault" class="form-check-input" />
+                    <label asp-for="NewCompany.IsDefault" class="form-check-label">افتراضي؟</label>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group mb-3">
-                    <label asp-for="ComEnglishName" class="form-label">الاسم الإنجليزي</label>
-                    <input asp-for="ComEnglishName" class="form-control" />
+                    <label asp-for="NewCompany.ComEnglishName" class="form-label">الاسم الإنجليزي</label>
+                    <input asp-for="NewCompany.ComEnglishName" class="form-control" />
                 </div>
                 <div class="form-group mb-3">
-                    <label asp-for="ShortEnglishName" class="form-label">الاسم المختصر إنجليزي</label>
-                    <input asp-for="ShortEnglishName" class="form-control" />
+                    <label asp-for="NewCompany.ShortEnglishName" class="form-label">الاسم المختصر إنجليزي</label>
+                    <input asp-for="NewCompany.ShortEnglishName" class="form-control" />
                 </div>
                 <div class="form-group mb-3">
-                    <label asp-for="ComAddress" class="form-label">العنوان</label>
-                    <textarea asp-for="ComAddress" class="form-control" rows="3"></textarea>
+                    <label asp-for="NewCompany.ComAddress" class="form-label">العنوان</label>
+                    <textarea asp-for="NewCompany.ComAddress" class="form-control" rows="3"></textarea>
                 </div>
                 <div class="form-group mb-3">
-                    <label asp-for="ComNote" class="form-label">ملاحظات</label>
-                    <textarea asp-for="ComNote" class="form-control" rows="3"></textarea>
+                    <label asp-for="NewCompany.ComNote" class="form-label">ملاحظات</label>
+                    <textarea asp-for="NewCompany.ComNote" class="form-control" rows="3"></textarea>
                 </div>
             </div>
         </div>
@@ -85,23 +86,84 @@
         </div>
     </form>
 </div>
+<hr />
+
+<div class="container form-container">
+    <h2>قائمة الشركات</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>الاسم العربي</th>
+                <th>الاسم الإنجليزي</th>
+                <th>مختصر عربي</th>
+                <th>مختصر إنجليزي</th>
+                <th>موقع</th>
+                <th>عنوان</th>
+                <th>ملاحظات</th>
+                <th>افتراضي؟</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model.Companies)
+            {
+                <tr>
+                    <td>@c.ComId</td>
+                    <td>@c.ComArabicName</td>
+                    <td>@c.ComEnglishName</td>
+                    <td>@c.ShortArabicName</td>
+                    <td>@c.ShortEnglishName</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(c.ComWebsite))
+                        {
+                            <a href="@c.ComWebsite" target="_blank">رابط</a>
+                        }
+                    </td>
+                    <td>@c.ComAddress</td>
+                    <td>@c.ComNote</td>
+                    <td>@(c.IsDefault ? "نعم" : "لا")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
 @section Scripts {
     <script>
-    function submitCompanyForm() {
-        if (validateCompany()) {
-            document.getElementById("companyForm").submit();
-        }
-    }
+       
+        async function submitCompanyForm() {
+            if (!validateCompany()) return;
 
-    function validateCompany() {
-        const arabicName = document.querySelector("[name='ComArabicName']").value.trim();
-        if (!arabicName) {
-            alert("الرجاء إدخال الاسم العربي");
-            return false;
+            const form = document.getElementById("companyForm");
+            const formData = new FormData(form);
+
+            try {
+                const res = await fetch(form.action, {
+                    method: "POST",
+                    body: formData
+                });
+                const json = await res.json();
+                if (json.success) {
+                    alert(json.message);
+                    window.location.href = json.redirectUrl;
+                } else {
+                    alert("خطأ: " + json.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("تعذر الاتصال بالخادم");
+            }
         }
-        console.log("النموذج جاهز للإرسال");
-        return true;
-    }
+
+        function validateCompany() {
+           const arabicName = document.getElementById("ComArabicName").value.trim();
+
+            if (!arabicName) {
+                alert("الرجاء إدخال الاسم العربي");
+                return false;
+            }
+            console.log("النموذج جاهز للإرسال");
+            return true;
+        }
     </script>
 }

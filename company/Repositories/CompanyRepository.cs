@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 
@@ -16,32 +17,78 @@ namespace company.Repositories
             _connStr = config.GetConnectionString("Connection");
         }
 
-        //public async Task SaveCompanyAsync(CompanyItem company)
-        //{
-        //    using var conn = new MySqlConnection(_connStr);
-        //    await conn.OpenAsync();
+        public async Task<IEnumerable<CompanyItem>> GetAllCompaniesAsync()
+        {
+            var list = new List<CompanyItem>();
+            using var conn = new MySqlConnection(_connStr);
+            await conn.OpenAsync();
 
-        //    var cmd = new MySqlCommand(
-        //        @"INSERT INTO COMPANYItem (
-        //            COMARABICNAME, COMENGLISHNAME, SHORTARABICNAME, SHORTENGLISHNAME, 
-        //            COMWEBSITE, COMADDRESS, COMNOTE, ComDefault, ADDUSER
-        //        ) VALUES (
-        //            @arabicName, @englishName, @shortArabic, @shortEnglish, 
-        //            @website, @address, @note, @isDefault, @addUser
-        //        )", conn);
+            const string sql = @"
+        SELECT 
+            COMID,
+            COMARABICNAME,
+            COMENGLISHNAME,
+            SHORTARABICNAME,
+            SHORTENGLISHNAME,
+            COMWEBSITE,
+            COMADDRESS,
+            COMNOTE,
+            ComDefault,
+            ADDUSER,
+            ADDDATE,
+            EDITUSER,
+            EDITDATE,
+            ISDELETED
+        FROM COMPANYItem
+        WHERE ISDELETED = 0;
+    ";
 
-        //    cmd.Parameters.AddWithValue("@arabicName", (object)company.ComArabicName ?? DBNull.Value);
-        //    cmd.Parameters.AddWithValue("@englishName", (object)company.ComEnglishName ?? DBNull.Value);
-        //    cmd.Parameters.AddWithValue("@shortArabic", (object)company.ShortArabicName ?? DBNull.Value);
-        //    cmd.Parameters.AddWithValue("@shortEnglish", (object)company.ShortEnglishName ?? DBNull.Value);
-        //    cmd.Parameters.AddWithValue("@website", (object)company.ComWebsite ?? DBNull.Value);
-        //    cmd.Parameters.AddWithValue("@address", (object)company.ComAddress ?? DBNull.Value);
-        //    cmd.Parameters.AddWithValue("@note", (object)company.ComNote ?? DBNull.Value);
-        //    cmd.Parameters.AddWithValue("@isDefault", company.IsDefault ? 1 : 0);
-        //    cmd.Parameters.AddWithValue("@addUser", 1); // يجب استبداله بمعرف المستخدم الحقيقي
+            using var cmd = new MySqlCommand(sql, conn);
+            using var reader = await cmd.ExecuteReaderAsync();
 
-        //    await cmd.ExecuteNonQueryAsync();
-        //}
+            // دالة مساعدة لقراءة النصوص أو إرجاع null
+            string SafeGetString(string colName) =>
+                reader.IsDBNull(reader.GetOrdinal(colName))
+                    ? null
+                    : reader.GetString(reader.GetOrdinal(colName));
+
+            // دالة مساعدة لقراءة nullable int
+            int? SafeGetInt(string colName) =>
+                reader.IsDBNull(reader.GetOrdinal(colName))
+                    ? (int?)null
+                    : reader.GetInt32(reader.GetOrdinal(colName));
+
+            // دالة مساعدة لقراءة nullable DateTime
+            DateTime? SafeGetDateTime(string colName) =>
+                reader.IsDBNull(reader.GetOrdinal(colName))
+                    ? (DateTime?)null
+                    : reader.GetDateTime(reader.GetOrdinal(colName));
+
+            while (await reader.ReadAsync())
+            {
+                list.Add(new CompanyItem
+                {
+                    ComId = reader.GetInt32(reader.GetOrdinal("COMID")),
+                    ComArabicName = SafeGetString("COMARABICNAME"),
+                    ComEnglishName = SafeGetString("COMENGLISHNAME"),
+                    ShortArabicName = SafeGetString("SHORTARABICNAME"),
+                    ShortEnglishName = SafeGetString("SHORTENGLISHNAME"),
+                    ComWebsite = SafeGetString("COMWEBSITE"),
+                    ComAddress = SafeGetString("COMADDRESS"),
+                    ComNote = SafeGetString("COMNOTE"),
+                    IsDefault = reader.GetBoolean(reader.GetOrdinal("ComDefault")),
+                    AddUserId = reader.GetInt32(reader.GetOrdinal("ADDUSER")),
+                    AddDate = reader.GetDateTime(reader.GetOrdinal("ADDDATE")),
+                    EditUserId = SafeGetInt("EDITUSER"),
+                    EditDate = SafeGetDateTime("EDITDATE"),
+                    IsDeleted = reader.GetBoolean(reader.GetOrdinal("ISDELETED"))
+                });
+            }
+
+            return list;
+        }
+
+
         public async Task SaveCompanyAsync(CompanyItem company)
         {
             using var conn = new MySqlConnection(_connStr);
