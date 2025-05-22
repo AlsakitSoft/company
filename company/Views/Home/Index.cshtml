@@ -11,7 +11,7 @@
     }
 
     .form-container {
-        max-width: 800px;
+        @* max-width: 800px; *@
         margin: auto;
         padding: 2rem;
         background: white;
@@ -36,6 +36,36 @@
         .btn-submit:hover {
             background-color: #3a0ca3;
         }
+         input[type="checkbox"].icon-checkbox {
+    -webkit-appearance: none;
+       -moz-appearance: none;
+            appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    position: relative;
+    cursor: default;
+    vertical-align: middle;
+    margin: 0;
+  }
+
+  /* ✖ عند غير المؤشر */
+  input[type="checkbox"].icon-checkbox::after {
+    content: "✖";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    color: red;
+  }
+
+  /* ✔ عند المؤشر */
+  input[type="checkbox"].icon-checkbox:checked::after {
+    content: "✔";
+    color: green;
+  }
 </style>
 
 <div class="container form-container">
@@ -116,12 +146,23 @@
                     <td>
                         @if (!string.IsNullOrEmpty(c.ComWebsite))
                         {
-                            <a href="@c.ComWebsite" target="_blank">رابط</a>
+                            <a href="@c.ComWebsite" target="_blank">@c.ComWebsite</a>
                         }
                     </td>
                     <td>@c.ComAddress</td>
                     <td>@c.ComNote</td>
-                    <td>@(c.IsDefault ? "نعم" : "لا")</td>
+                    @* <td>@(c.IsDefault ? "نعم" : "لا")</td> *@
+                    @* <td>@c.IsDefault.ToString().ToLower()</td> *@
+                    <td>
+  <input
+    type="checkbox"
+    class="icon-checkbox"
+    disabled
+    @(c.IsDefault ? "checked" : "")
+  />
+</td>
+
+
                 </tr>
             }
         </tbody>
